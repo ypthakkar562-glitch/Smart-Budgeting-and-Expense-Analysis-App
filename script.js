@@ -48,3 +48,7 @@ function updateUI() {
         advice.innerText = "✅ Good financial condition!";
     }
 }
+function startApp() {
+    document.getElementById("welcomeScreen").style.display = "none";
+    document.getElementById("mainApp").style.display = "block";
+}
