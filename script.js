@@ -1,68 +1,102 @@
-body {
-    font-family: 'Segoe UI', sans-serif;
-    margin: 0;
-    text-align: center;
+let transactions = [];
+
+function startApp() {
+    document.getElementById("welcomeScreen").style.display = "none";
+    document.getElementById("mainApp").style.display = "block";
 }
 
-/* Welcome Screen */
-#welcomeScreen {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
+function addTransaction() {
+
+    let desc = document.getElementById("desc").value;
+    let amount = document.getElementById("amount").value;
+    let type = document.getElementById("type").value;
+
+    if (desc === "" || amount === "") {
+        alert("Enter details");
+        return;
+    }
+
+    amount = parseInt(amount);
+
+    if (type === "expense") {
+        amount = -amount;
+    }
+
+    transactions.push({ desc, amount });
+
+    updateUI();
 }
 
-#welcomeScreen button {
-    padding: 12px 25px;
-    font-size: 16px;
-    background: white;
-    color: #333;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
+function updateUI() {
+
+    let list = document.getElementById("list");
+    list.innerHTML = "";
+
+    let balance = 0;
+
+    transactions.forEach((t) => {
+        let li = document.createElement("li");
+        li.innerText = t.desc + " : ₹" + Math.abs(t.amount);
+        list.appendChild(li);
+
+        balance += t.amount;
+    });
+
+    document.getElementById("balance").innerText = balance;
+
+    let advice = document.getElementById("advice");
+
+    if (balance < 0) {
+        advice.innerText = "⚠️ You are overspending!\nNote: Try to save more money.";
+    } else if (balance < 1000) {
+        advice.innerText = "💡 Try to save more money.";
+    } else {
+        advice.innerText = "✅ Good financial condition!";
+    }
 }
 
-/* Main App */
-#mainApp {
-    background: linear-gradient(135deg, #74ebd5, #9face6);
-    min-height: 100vh;
-    padding-top: 20px;
-}
+function downloadPDF() {
 
-.container {
-    background: white;
-    padding: 25px;
-    width: 350px;
-    margin: auto;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-}
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
 
-input, select, button {
-    margin: 8px;
-    padding: 10px;
-    width: 90%;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-}
+    doc.text("Smart Budget Report", 70, 10);
 
-button {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    font-weight: bold;
-}
+    let incomeData = [];
+    let expenseData = [];
 
-button:hover {
-    background: #45a049;
-}
+    let income = 0;
+    let expense = 0;
 
-li {
-    background: #f9f9f9;
-    margin: 5px;
-    padding: 8px;
-    border-radius: 6px;
+    transactions.forEach((t) => {
+        if (t.amount > 0) {
+            incomeData.push([t.desc, t.amount]);
+            income += t.amount;
+        } else {
+            expenseData.push([t.desc, Math.abs(t.amount)]);
+            expense += Math.abs(t.amount);
+        }
+    });
+
+    doc.text("Income", 14, 20);
+    doc.autoTable({
+        startY: 25,
+        head: [["Description", "Amount"]],
+        body: incomeData
+    });
+
+    doc.text("Expense", 14, doc.lastAutoTable.finalY + 10);
+    doc.autoTable({
+        startY: doc.lastAutoTable.finalY + 15,
+        head: [["Description", "Amount"]],
+        body: expenseData
+    });
+
+    let y = doc.lastAutoTable.finalY + 10;
+
+    doc.text("Total Income: ₹" + income, 14, y);
+    doc.text("Total Expense: ₹" + expense, 14, y + 10);
+    doc.text("Balance: ₹" + (income - expense), 14, y + 20);
+
+    doc.save("Budget_Report.pdf");
 }
