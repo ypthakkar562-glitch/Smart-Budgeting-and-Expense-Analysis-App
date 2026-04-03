@@ -2,39 +2,53 @@
 <html>
 <head>
     <title>Smart Budget App</title>
+
     <link rel="stylesheet" href="style.css">
+
+    <!-- PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 </head>
-<body> 
-    <div id="welcomeScreen">
+
+<body>
+
+<!-- Welcome Screen -->
+<div id="welcomeScreen">
     <h1>👋 Welcome to Smart Budget App</h1>
-    <p>Manage your income and expenses easily</p>
-    <button onclick="startApp()">Continue</button>
+    <p>Track your income & expenses easily</p>
+    <button onclick="startApp()">Start</button>
 </div>
 
+<!-- Main App -->
 <div id="mainApp" style="display:none;">
 
-    <h1>💰 Smart Budget App</h1>
+<h1>💰 Smart Budget App</h1>
 
-    <div class="container">
-        <h2>Balance: ₹<span id="balance">0</span></h2>
+<div class="container">
 
-       <input type="text" id="desc" placeholder="Description">
-        <input type="number" id="amount" placeholder="Amount">
-        
-        <select id="type">
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-        </select>
+    <h2>Balance: ₹<span id="balance">0</span></h2>
 
-        <button onclick="addTransaction()">Add</button>
+    <input type="text" id="desc" placeholder="Description">
+    <input type="number" id="amount" placeholder="Amount">
 
-        <h3>Transactions</h3>
-        <ul id="list"></ul>
+    <select id="type">
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+    </select>
 
-        <h3 id="advice"></h3>
-    </div>
+    <button onclick="addTransaction()">Add</button>
+    <button onclick="downloadPDF()">Download Report</button>
 
-    <script src="script.js"></script>
+    <h3>Transactions</h3>
+    <ul id="list"></ul>
+
+    <h3 id="advice"></h3>
+
+</div>
+
+</div>
+
+<script src="script.js"></script>
+
 </body>
 </html>
-</div>
