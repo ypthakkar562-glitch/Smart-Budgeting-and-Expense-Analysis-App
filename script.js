@@ -107,11 +107,15 @@ function downloadPDF() {
         startY: doc.lastAutoTable.finalY + 10
     });
 
-    let y = doc.lastAutoTable.finalY + 10;
+  let y = doc.lastAutoTable.finalY + 15;
 
-    doc.text("Total Income: ₹" + income, 14, y);
-    doc.text("Total Expense: ₹" + expense, 14, y + 10);
-    doc.text("Balance: ₹" + (income - expense), 14, y + 20);
+doc.setFontSize(12);
 
-    doc.save("Budget_Report.pdf");
+doc.text("Total Income: Rs. " + income, 14, y);
+y += 10;
+
+doc.text("Total Expense: Rs. " + expense, 14, y);
+y += 10;
+
+doc.text("Balance: Rs. " + (income - expense), 14, y);
 }
