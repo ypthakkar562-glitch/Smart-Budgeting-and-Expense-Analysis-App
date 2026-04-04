@@ -8,7 +8,7 @@ function startApp() {
 
 function addTransaction() {
 
-    let desc = document.getElementById("desc").value;
+    let desc = document.getElementById("desc").value.trim();
     let amount = document.getElementById("amount").value;
     let type = document.getElementById("type").value;
 
@@ -19,6 +19,11 @@ function addTransaction() {
 
     amount = parseInt(amount);
 
+    if (isNaN(amount)) {
+        alert("Enter valid amount");
+        return;
+    }
+
     if (type === "expense") {
         amount = -amount;
     }
@@ -27,6 +32,10 @@ function addTransaction() {
 
     saveData();
     updateUI();
+
+    // Clear inputs
+    document.getElementById("desc").value = "";
+    document.getElementById("amount").value = "";
 }
 
 function deleteTransaction(index) {
@@ -51,7 +60,7 @@ function updateUI() {
         let li = document.createElement("li");
 
         li.innerHTML = `
-            ${t.desc} : ₹${Math.abs(t.amount)}
+            ${t.desc} : Rs.${Math.abs(t.amount)}
             <button class="delete-btn" onclick="deleteTransaction(${index})">X</button>
         `;
 
@@ -72,63 +81,52 @@ function updateUI() {
         advice.innerText = "✅ Good financial condition!";
     }
 }
+
+// 🔥 FINAL WORKING PDF FUNCTION (NO ERROR VERSION)
 function downloadPDF() {
 
-    try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        doc.setFontSize(16);
-        doc.text("Smart Budget Report", 60, 10);
-
-        let incomeData = [];
-        let expenseData = [];
-
-        let income = 0;
-        let expense = 0;
-
-        transactions.forEach((t) => {
-            if (t.amount > 0) {
-                incomeData.push([t.desc, t.amount]);
-                income += t.amount;
-            } else {
-                expenseData.push([t.desc, Math.abs(t.amount)]);
-                expense += Math.abs(t.amount);
-            }
-        });
-
-        // Income Table
-        doc.autoTable({
-            startY: 20,
-            head: [["Income Description", "Amount"]],
-            body: incomeData
-        });
-
-        let y = doc.lastAutoTable.finalY + 10;
-
-        // Expense Table
-        doc.autoTable({
-            startY: y,
-            head: [["Expense Description", "Amount"]],
-            body: expenseData
-        });
-
-        y = doc.lastAutoTable.finalY + 15;
-
-        // Totals
-        doc.setFontSize(12);
-        doc.text("Total Income: Rs. " + income, 14, y);
-        y += 10;
-
-        doc.text("Total Expense: Rs. " + expense, 14, y);
-        y += 10;
-
-        doc.text("Balance: Rs. " + (income - expense), 14, y);
-
-        doc.save("Budget_Report.pdf");
-
-    } catch (error) {
-        alert("PDF Error: " + error.message);
-        console.log(error);
+    if (!window.jspdf) {
+        alert("PDF library not loaded. Check CDN.");
+        return;
     }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.text("Smart Budget Report", 20, 15);
+
+    let y = 30;
+
+    let income = 0;
+    let expense = 0;
+
+    doc.setFontSize(12);
+
+    transactions.forEach((t) => {
+
+        let text = (t.amount > 0 ? "Income: " : "Expense: ") +
+                   t.desc + " Rs." + Math.abs(t.amount);
+
+        doc.text(text, 20, y);
+        y += 10;
+
+        if (t.amount > 0) {
+            income += t.amount;
+        } else {
+            expense += Math.abs(t.amount);
+        }
+    });
+
+    y += 10;
+
+    doc.text("Total Income: Rs. " + income, 20, y);
+    y += 10;
+
+    doc.text("Total Expense: Rs. " + expense, 20, y);
+    y += 10;
+
+    doc.text("Balance: Rs. " + (income - expense), 20, y);
+
+    doc.save("Budget_Report.pdf");
 }
