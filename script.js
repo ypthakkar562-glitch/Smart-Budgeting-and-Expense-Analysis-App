@@ -1,8 +1,9 @@
-let transactions = [];
+let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
 
 function startApp() {
     document.getElementById("welcomeScreen").style.display = "none";
     document.getElementById("mainApp").style.display = "block";
+    updateUI();
 }
 
 function addTransaction() {
@@ -24,7 +25,18 @@ function addTransaction() {
 
     transactions.push({ desc, amount });
 
+    saveData();
     updateUI();
+}
+
+function deleteTransaction(index) {
+    transactions.splice(index, 1);
+    saveData();
+    updateUI();
+}
+
+function saveData() {
+    localStorage.setItem("transactions", JSON.stringify(transactions));
 }
 
 function updateUI() {
@@ -34,9 +46,15 @@ function updateUI() {
 
     let balance = 0;
 
-    transactions.forEach((t) => {
+    transactions.forEach((t, index) => {
+
         let li = document.createElement("li");
-        li.innerText = t.desc + " : ₹" + Math.abs(t.amount);
+
+        li.innerHTML = `
+            ${t.desc} : ₹${Math.abs(t.amount)}
+            <button class="delete-btn" onclick="deleteTransaction(${index})">X</button>
+        `;
+
         list.appendChild(li);
 
         balance += t.amount;
@@ -53,50 +71,4 @@ function updateUI() {
     } else {
         advice.innerText = "✅ Good financial condition!";
     }
-}
-
-function downloadPDF() {
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    doc.text("Smart Budget Report", 70, 10);
-
-    let incomeData = [];
-    let expenseData = [];
-
-    let income = 0;
-    let expense = 0;
-
-    transactions.forEach((t) => {
-        if (t.amount > 0) {
-            incomeData.push([t.desc, t.amount]);
-            income += t.amount;
-        } else {
-            expenseData.push([t.desc, Math.abs(t.amount)]);
-            expense += Math.abs(t.amount);
-        }
-    });
-
-    doc.text("Income", 14, 20);
-    doc.autoTable({
-        startY: 25,
-        head: [["Description", "Amount"]],
-        body: incomeData
-    });
-
-    doc.text("Expense", 14, doc.lastAutoTable.finalY + 10);
-    doc.autoTable({
-        startY: doc.lastAutoTable.finalY + 15,
-        head: [["Description", "Amount"]],
-        body: expenseData
-    });
-
-    let y = doc.lastAutoTable.finalY + 10;
-
-    doc.text("Total Income: ₹" + income, 14, y);
-    doc.text("Total Expense: ₹" + expense, 14, y + 10);
-    doc.text("Balance: ₹" + (income - expense), 14, y + 20);
-
-    doc.save("Budget_Report.pdf");
 }
