@@ -72,3 +72,46 @@ function updateUI() {
         advice.innerText = "✅ Good financial condition!";
     }
 }
+function downloadPDF() {
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.text("Smart Budget Report", 70, 10);
+
+    let incomeData = [];
+    let expenseData = [];
+
+    let income = 0;
+    let expense = 0;
+
+    transactions.forEach((t) => {
+        if (t.amount > 0) {
+            incomeData.push([t.desc, t.amount]);
+            income += t.amount;
+        } else {
+            expenseData.push([t.desc, Math.abs(t.amount)]);
+            expense += Math.abs(t.amount);
+        }
+    });
+
+    doc.autoTable({
+        head: [["Income Description", "Amount"]],
+        body: incomeData,
+        startY: 20
+    });
+
+    doc.autoTable({
+        head: [["Expense Description", "Amount"]],
+        body: expenseData,
+        startY: doc.lastAutoTable.finalY + 10
+    });
+
+    let y = doc.lastAutoTable.finalY + 10;
+
+    doc.text("Total Income: ₹" + income, 14, y);
+    doc.text("Total Expense: ₹" + expense, 14, y + 10);
+    doc.text("Balance: ₹" + (income - expense), 14, y + 20);
+
+    doc.save("Budget_Report.pdf");
+}
