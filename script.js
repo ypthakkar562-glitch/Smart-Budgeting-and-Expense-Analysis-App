@@ -86,47 +86,62 @@ function updateUI() {
 function downloadPDF() {
 
     if (!window.jspdf) {
-        alert("PDF library not loaded. Check CDN.");
+        alert("PDF library not loaded!");
         return;
     }
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    doc.setFontSize(16);
-    doc.text("Smart Budget Report", 20, 15);
+    doc.setFontSize(18);
+    doc.text("Smart Budget Report", 70, 10);
 
-    let y = 30;
+    let incomeData = [];
+    let expenseData = [];
 
     let income = 0;
     let expense = 0;
 
-    doc.setFontSize(12);
-
     transactions.forEach((t) => {
-
-        let text = (t.amount > 0 ? "Income: " : "Expense: ") +
-                   t.desc + " Rs." + Math.abs(t.amount);
-
-        doc.text(text, 20, y);
-        y += 10;
-
         if (t.amount > 0) {
+            incomeData.push([t.desc, t.amount]);
             income += t.amount;
         } else {
+            expenseData.push([t.desc, Math.abs(t.amount)]);
             expense += Math.abs(t.amount);
         }
     });
 
+    // ✅ INCOME TABLE
+    doc.autoTable({
+        startY: 20,
+        head: [["Income Description", "Amount"]],
+        body: incomeData,
+        theme: "grid",
+        headStyles: { fillColor: [52, 120, 170] }
+    });
+
+    // ✅ EXPENSE TABLE
+    doc.autoTable({
+        startY: doc.lastAutoTable.finalY + 10,
+        head: [["Expense Description", "Amount"]],
+        body: expenseData,
+        theme: "grid",
+        headStyles: { fillColor: [52, 120, 170] }
+    });
+
+    let y = doc.lastAutoTable.finalY + 15;
+
+    // ✅ TOTALS (clean spacing — no bug)
+    doc.setFontSize(14);
+
+    doc.text("Total Income: " + income, 14, y);
     y += 10;
 
-    doc.text("Total Income: Rs. " + income, 20, y);
+    doc.text("Total Expense: " + expense, 14, y);
     y += 10;
 
-    doc.text("Total Expense: Rs. " + expense, 20, y);
-    y += 10;
+    doc.text("Balance: " + (income - expense), 14, y);
 
-    doc.text("Balance: Rs. " + (income - expense), 20, y);
-
-    doc.save("Budget_Report.pdf");
+    doc.save("Smart_Budget_Report.pdf");
 }
