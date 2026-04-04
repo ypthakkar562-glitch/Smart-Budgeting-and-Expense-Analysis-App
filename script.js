@@ -74,48 +74,61 @@ function updateUI() {
 }
 function downloadPDF() {
 
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
 
-    doc.text("Smart Budget Report", 70, 10);
+        doc.setFontSize(16);
+        doc.text("Smart Budget Report", 60, 10);
 
-    let incomeData = [];
-    let expenseData = [];
+        let incomeData = [];
+        let expenseData = [];
 
-    let income = 0;
-    let expense = 0;
+        let income = 0;
+        let expense = 0;
 
-    transactions.forEach((t) => {
-        if (t.amount > 0) {
-            incomeData.push([t.desc, t.amount]);
-            income += t.amount;
-        } else {
-            expenseData.push([t.desc, Math.abs(t.amount)]);
-            expense += Math.abs(t.amount);
-        }
-    });
+        transactions.forEach((t) => {
+            if (t.amount > 0) {
+                incomeData.push([t.desc, t.amount]);
+                income += t.amount;
+            } else {
+                expenseData.push([t.desc, Math.abs(t.amount)]);
+                expense += Math.abs(t.amount);
+            }
+        });
 
-    doc.autoTable({
-        head: [["Income Description", "Amount"]],
-        body: incomeData,
-        startY: 20
-    });
+        // Income Table
+        doc.autoTable({
+            startY: 20,
+            head: [["Income Description", "Amount"]],
+            body: incomeData
+        });
 
-    doc.autoTable({
-        head: [["Expense Description", "Amount"]],
-        body: expenseData,
-        startY: doc.lastAutoTable.finalY + 10
-    });
+        let y = doc.lastAutoTable.finalY + 10;
 
-  let y = doc.lastAutoTable.finalY + 15;
+        // Expense Table
+        doc.autoTable({
+            startY: y,
+            head: [["Expense Description", "Amount"]],
+            body: expenseData
+        });
 
-doc.setFontSize(12);
+        y = doc.lastAutoTable.finalY + 15;
 
-doc.text("Total Income: Rs. " + income, 14, y);
-y += 10;
+        // Totals
+        doc.setFontSize(12);
+        doc.text("Total Income: Rs. " + income, 14, y);
+        y += 10;
 
-doc.text("Total Expense: Rs. " + expense, 14, y);
-y += 10;
+        doc.text("Total Expense: Rs. " + expense, 14, y);
+        y += 10;
 
-doc.text("Balance: Rs. " + (income - expense), 14, y);
+        doc.text("Balance: Rs. " + (income - expense), 14, y);
+
+        doc.save("Budget_Report.pdf");
+
+    } catch (error) {
+        alert("PDF Error: " + error.message);
+        console.log(error);
+    }
 }
